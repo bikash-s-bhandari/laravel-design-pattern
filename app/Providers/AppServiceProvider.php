@@ -17,6 +17,9 @@ use App\Services\Strategy\LogToFile;
 use App\Services\Strategy\LogToDatabase;
 use App\Services\Strategy\LogToWebService;
 use App\Contracts\LoggerInterface;
+use App\Contracts\EasyToMaintain\PaymentGatewayInterface;
+use App\Services\EasyMaintain\EsewaGateway;
+use App\Services\EasyMaintain\KhaltiGateway;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -53,6 +56,17 @@ class AppServiceProvider extends ServiceProvider
 
             // Web Service मा switch गर्न:
             // return new LogToWebService();
+        });
+
+        $this->app->bind(PaymentGatewayInterface::class, function ($app) {
+            $gateway = request()->input('gateway', config('payment.default', 'esewa'));
+
+            return match (strtolower($gateway)) {
+                'esewa'  => new EsewaGateway(),
+                'khalti' => new KhaltiGateway(),
+                // 'fonepay' => new FonepayGateway(),
+                default  => throw new \Exception("Unsupported gateway: $gateway"),
+            };
         });
     }
 

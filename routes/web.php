@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Decorators\CoffeeController;
 use App\Http\Controllers\Adapters\BookController;
 use App\Http\Controllers\Templates\SandwichController;
+use App\Http\Controllers\EasyMaintainCode\OrderController;
+use App\Http\Controllers\EloquentPerformance\UserController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -32,4 +34,15 @@ Route::controller(BookController::class)->group(function () {
 Route::controller(SandwichController::class)->group(function () {
     Route::get('/non-veg-sandwich', 'showNonVegSandwich');
     Route::get('/veg-sandwich', 'showVeggieSandwich');
+});
+
+
+// Easy Navigation Code
+//Clear route: /orders/total → clearly indicates purpose
+Route::get('/orders/total', [OrderController::class, 'totalPrice']);
+
+// Eloquent Performance
+Route::controller(UserController::class)->group(function () {
+    Route::get('/users', 'index');
+    Route::get('/users/last-login', 'getUsersWithLastLogin');
 });
