@@ -6,6 +6,7 @@ use App\Http\Controllers\Adapters\BookController;
 use App\Http\Controllers\Templates\SandwichController;
 use App\Http\Controllers\EasyMaintainCode\OrderController;
 use App\Http\Controllers\EloquentPerformance\UserController;
+use App\Http\Controllers\Monstrous\AdvancedExampleController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -45,4 +46,11 @@ Route::get('/orders/total', [OrderController::class, 'totalPrice']);
 Route::controller(UserController::class)->group(function () {
     Route::get('/users', 'index');
     Route::get('/users/last-login', 'getUsersWithLastLogin');
+    Route::get('/users/circular-bad', 'badCircularRelationship');
+    Route::get('/users/circular-good', 'goodCircularRelationship');
 });
+
+Route::get('/users/search', [UserController::class, 'search']);
+
+
+

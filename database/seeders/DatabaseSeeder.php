@@ -6,6 +6,9 @@ use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Post;
+use App\Models\Feature;
+use App\Models\Comment;
+use App\Models\Company;
 
 class DatabaseSeeder extends Seeder
 {
@@ -16,8 +19,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create 10,000 users
-        $users = User::factory(1000)->create();
+        $companies = Company::factory(10)->create();
+        // Create 1,000 users with randomly assigned statuses
+        $users = User::factory(1000)->make()->each(function ($user) use ($companies) {
+            $user->status = fake()->randomElement(['active', 'inactive', 'suspended']);
+            $user->company_id = $companies->random()->id;
+            $user->save();
+        });
 
         // For each user, create a post
         foreach ($users as $user) {
@@ -25,6 +33,15 @@ class DatabaseSeeder extends Seeder
                 'title' => fake()->sentence,
                 'content' => fake()->paragraph,
             ]);
+        }
+
+        // For each post, create 1–5 comments (from the post author)
+        foreach (Post::all() as $post) {
+            Comment::factory()
+                ->count(fake()->numberBetween(1, 5))
+                ->for($post)
+                ->for($post->user, 'user')
+                ->create();
         }
 
         // For each user, create at least 3 logins with random created_at dates within the last month to today
@@ -37,5 +54,10 @@ class DatabaseSeeder extends Seeder
                 ]);
             }
         }
+
+        Feature::factory(1000)->create()->each(function ($feature) {
+            $feature->status = fake()->randomElement(['requested', 'approved', 'rejected']);
+            $feature->save();
+        });
     }
 }

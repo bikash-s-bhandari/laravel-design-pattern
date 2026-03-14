@@ -51,6 +51,30 @@
 
 
             <div class="container">
+                {{-- User Status Overview --}}
+                <div class="mb-6 flex gap-4">
+                    <div class="flex items-center gap-2">
+                        <span class="inline-block bg-green-100 text-green-800 text-xs px-2.5 py-0.5 rounded-full font-semibold">Active</span>
+                        <span class="font-bold text-base">
+                            {{-- {{ $activeStatus }} --}}
+                           {{ $status->requested_count }}
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="inline-block bg-gray-100 text-gray-800 text-xs px-2.5 py-0.5 rounded-full font-semibold">Inactive</span>
+                        <span class="font-bold text-base">
+                            {{-- {{ $inactiveStatus }} --}}
+                          {{ $status->approved_count }}
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="inline-block bg-yellow-100 text-yellow-800 text-xs px-2.5 py-0.5 rounded-full font-semibold">Suspended</span>
+                        <span class="font-bold text-base">
+                            {{-- {{ $suspendedStatus }} --}}
+                          {{ $status->rejected_count }}
+                        </span>
+                    </div>
+                </div>
                 <h2>User List</h2>
 
                 @if ($users->isEmpty())
@@ -77,8 +101,8 @@
                                     {{-- <td>{{ $user->logins->sortByDesc('created_at')->first()?->created_at->diffForHumans()??'Never logged in' }}</td> --}}
                                     <td>
                                         {{-- {{ $user->last_login_at->diffForHumans()}} --}}
-                                        {{ $user->lastLogin->created_at->diffForHumans()}}
-                                        <span class="text-xs text-gray-500">{{ $user->lastLogin->ip_address}}</span>
+                                        {{ $user->lastLogin?->created_at->diffForHumans()}}
+                                        <span class="text-xs text-gray-500">{{ $user->lastLogin?->ip_address}}</span>
 
                                     </td>
                                     <td>{{ $user->created_at }}</td>

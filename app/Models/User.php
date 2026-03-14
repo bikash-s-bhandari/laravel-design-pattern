@@ -26,6 +26,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'company_id',
+
     ];
 
     /**
@@ -56,20 +58,80 @@ class User extends Authenticatable
         return $this->hasMany(Post::class);
     }
 
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
     public function logins()
     {
         return $this->hasMany(Login::class);
     }
 
+    // public function lastLogin()
+    // {
+    //     return $this->belongsTo(Login::class);
+    // }
+
+    // public function scopeWithLastLogin($query)
+    // {
+    //     return $query->addSelect(['last_login_id' => Login::select('id')
+    //         ->whereColumn('user_id', 'users.id')->latest()->take(1)])
+    //         ->with('lastLogin');
+    // }
+
     public function lastLogin()
     {
-        return $this->belongsTo(Login::class);
+        return $this->hasOne(Login::class)->latestOfMany();
     }
 
-    public function scopeWithLastLogin($query)
+    public function company()
     {
-        return $query->addSelect(['last_login_id' => Login::select('id')
-            ->whereColumn('user_id', 'users.id')->latest()->take(1)])
-            ->with('lastLogin');
+        return $this->belongsTo(Company::class);
+    }
+
+    public function scopeSearch($query, string $search)
+    {
+        collect(str_getcsv($search, ' ', '"'))->filter()->each(function ($term) use ($query) {
+            // $term = '%' . $term . '%';
+            $term = $term . '%';
+            $query->where(function ($query) use ($term) {
+                $query->where('name', 'like', $term) //add index on name column
+                    ->orWhere('email', 'like', $term) //add index on email column
+                    ->orWhereHas('company', function ($query) use ($term) {
+                        $query->where('name', 'like', $term); //add index on company name column
+                    });
+            });
+        });
+    }
+
+    public function scopeSearchCompany($query, string $search)
+    {
+        //orWhere ko satta join  gare query ko performance ali ramro hunxa but still index use hudena
+        $query->join('companies', 'users.company_id', '=', 'companies.id');
+
+        collect(str_getcsv($search, ' ', '"'))->filter()->each(function ($term) use ($query) {
+            $term = $term . '%';
+            $query->where(function ($query) use ($term) {
+                $query->where('users.name', 'like', $term)
+                    ->orWhere('users.email', 'like', $term)
+                    ->orWhere('companies.name', 'like', $term);
+            });
+        });
+
+        return $query;
+    }
+
+    //this is better than scopeSearchCompany because it uses index on company name column
+    public function scopeSearchCompanyWithIndex($query, string $search)
+    {
+        collect(str_getcsv($search, ' ', '"'))->filter()->each(function ($term) use ($query) {
+            $term = $term . '%';
+            $query->where(function ($query) use ($term) {
+                $query->where('users.name', 'like', $term)
+                    ->orWhere('users.email', 'like', $term)
+                    ->orWhereIn('company_id', Company::query()->where('name', 'like', $term)->pluck('id'));
+            });
+        });
     }
 }
