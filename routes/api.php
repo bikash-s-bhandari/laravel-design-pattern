@@ -41,3 +41,8 @@ Route::controller(AdvancedExampleController::class)->group(function () {
 Route::controller(GoodExampleController::class)->group(function () {
     Route::post('/domain-events/register', 'store');
 });
+
+// Policies
+Route::controller(GoodExampleController::class)->group(function () {
+    Route::post('/policies/add-member', 'store');
+});
